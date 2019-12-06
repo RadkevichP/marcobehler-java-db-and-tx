@@ -1,3 +1,5 @@
+package part_01_jdbc.code;
+
 import org.junit.Test;
 
 import java.sql.Connection;

@@ -8,12 +8,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-public class RollbackExercise {
-
-    private static final Integer NO_TIMEOUT = 0;
+public class DeadlocksInsert1Exercise {
 
     @Before
     public void setup() {
@@ -25,30 +20,33 @@ public class RollbackExercise {
     }
 
     @Test
-    public void rollback_exercise() throws SQLException {
-        try (Connection connection = getConnection()) {
-            connection.setAutoCommit(false);
-
-            connection.createStatement().execute("insert into items " +
-                    "(name) values ('Windows 10 Premium Edition')");
-
-            connection.createStatement().execute("insert into bids" +
-                    " (user, time, amount, currency) values ('Hans', " +
-                    "now(), 1, 'EUR')");
-            connection.createStatement().execute("insert into bids " +
-                    "(user, time, amount, currency) values ('Franz'," +
-                    "now() , 2, 'EUR')");
-            //connection.rollback();
-            throw new SQLException("test");
-            //System.out.println("We rolled back our transaction!");
-            //assertThat(getItemsCount(connection), equalTo(0));
-        } catch (SQLException e) {
-            Connection connection = getConnection();
-            System.out.println("Are we connected to the database : "
-                    + connection.isValid(NO_TIMEOUT));
-            assertThat(getItemsCount(connection), equalTo(0));
+    public void deadlock_insert_exercise_part1() throws SQLException {
+        System.out.println("Do we reach the end of the test without a deadlock?....");
+        try (Connection connectionFromPavel = getConnection()) {
+            connectionFromPavel.setAutoCommit(false);
+            connectionFromPavel.createStatement().execute(
+                    "insert into items (name) values ('CTU Filed Agent Report')"
+            );
+            try (Connection connectionFromVova = getConnection()) {
+                connectionFromVova.setAutoCommit(false);
+                connectionFromVova.createStatement().execute(
+                        "insert into items (name) values ('CTU Filed Agent Report')"
+                );
+                try (Connection connectionFromMax = getConnection()){
+                    connectionFromMax.setAutoCommit(false);
+                    connectionFromMax.createStatement().execute(
+                            "insert into items (name) values ('CTU Filed Agent Report')"
+                    );
+                }
+            }
         }
+        System.out.println("Yes!");
+        try (Connection checkingConnection = getConnection()) {
+            System.out.println( getItemsCount(checkingConnection) + " items found!");
+        }
+
     }
+
 
     private int getItemsCount(Connection connection) throws SQLException {
         ResultSet resultSet = connection.createStatement()

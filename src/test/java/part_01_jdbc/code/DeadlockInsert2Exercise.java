@@ -20,7 +20,7 @@ public class DeadlockInsert2Exercise {
     }
 
     @Test
-    public void deadlock_insert_exercise_part1() throws SQLException {
+    public void deadlock_insert_exercise_part2() throws SQLException {
         System.out.println("Do we reach the end of the test without a deadlock?....");
         try (Connection connectionFromPavel = getConnection()) {
             connectionFromPavel.setAutoCommit(false);

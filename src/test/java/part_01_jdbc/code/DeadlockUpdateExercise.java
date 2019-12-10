@@ -1,9 +1,11 @@
 package part_01_jdbc.code;
 
 import org.junit.Before;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DeadlockUpdateExercise {
@@ -17,6 +19,31 @@ public class DeadlockUpdateExercise {
         }
     }
 
+    @Test
+    public void dedlock_update_exercise() throws SQLException {
+        System.out.println("Do we reach the end of the test without a deadlock?....");
+        try (Connection connectionPR = getConnection()) {
+            connectionPR.setAutoCommit(false);
+            connectionPR.createStatement().execute("insert into items " +
+                    "(name) values ('CTU Field Report')");
+            try (Connection connectionHM = getConnection()) {
+                connectionHM.setAutoCommit(false);
+                connectionHM.createStatement().execute("update items set name = 'destroyed'" +
+                        " where name = 'CTU Field Report' ;");
+               /* connectionHM.createStatement().execute("delete from items where name = 'CTU Field Report'");*/
+                connectionHM.commit();
+            }
+            connectionPR.commit();
+        }
+        System.out.println("Yes!");
+
+        try (Connection checkConnection = getConnection()){
+            ResultSet resultSet = checkConnection.createStatement()
+                    .executeQuery("select * from items");
+            resultSet.next();
+            System.out.println("Name from DB: " + resultSet.getString("name"));
+        }
+    }
 
 
     private Connection getConnection() throws SQLException {
@@ -30,7 +57,7 @@ public class DeadlockUpdateExercise {
                     "amount NUMBER, currency VARCHAR)");
 
             conn.createStatement().execute("create table items " +
-                    "(id identity, name VARCHAR)");
+                    "(id identity, name VARCHAR unique )");
         } catch (SQLException e) {
             e.printStackTrace();
         }

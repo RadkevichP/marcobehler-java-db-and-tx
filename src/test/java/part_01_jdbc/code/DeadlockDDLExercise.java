@@ -1,6 +1,5 @@
 package part_01_jdbc.code;
 
-import org.h2.jdbc.JdbcSQLException;
 import org.h2.jdbc.JdbcSQLTimeoutException;
 import org.junit.Before;
 import org.junit.Test;

@@ -45,7 +45,6 @@ public class DeadlockUpdateExercise {
         }
     }
 
-
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:h2:mem:exercise_bd;DB_CLOSE_DELAY=-1");
     }
